@@ -50,6 +50,14 @@ def get_all_books():
     if description_param:
         query = query.where(Book.description.ilike(f"%{description_param}%"))
 
+    min_param = request.args.get("min")
+    if min_param:
+        query = query.where(Book.id >= int(min_param))
+    
+    max_param = request.args.get("max")
+    if max_param:
+        query = query.where(Book.id <= int(max_param))
+
     books = db.session.scalars(query.order_by(Book.id))
 
     books_response = []
