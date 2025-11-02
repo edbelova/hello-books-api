@@ -7,19 +7,16 @@ books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 @books_bp.post("")
 def create_book():
     request_body = request.get_json()
-    title_from_request_body = request_body["title"]
-    description_from_request_body = request_body["description"]
 
-    new_book = Book(title=title_from_request_body, description=description_from_request_body)
+    try:
+        new_book = Book.from_dict(request_body)
+    except KeyError as error:
+        handle_error(f"Invalid request: missing {error.args[0]}", 400)
+
     db.session.add(new_book)
     db.session.commit()
 
-    response = {
-        "id": new_book.id,
-        "title": new_book.title,
-        "description": new_book.description,
-    }
-    return response, 201
+    return new_book.to_dict(), 201
 
 @books_bp.put("/<book_id>")
 def update_book(book_id):
@@ -31,12 +28,7 @@ def update_book(book_id):
 
     db.session.commit()
 
-    response_body = {
-        "id": book.id,
-        "title": book.title,
-        "description": book.description
-    }
-    return make_response(response_body, 200, {"Content-Type": "application/json"})
+    return make_response(book.to_dict(), 200, {"Content-Type": "application/json"})
 
 @books_bp.get("")
 def get_all_books():
@@ -60,31 +52,16 @@ def get_all_books():
 
     books = db.session.scalars(query.order_by(Book.id))
 
-    books_response = []
-    for book in books:
-        books_response.append(
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            }
-        )
-    return books_response
+    return [book.to_dict() for book in books]
 
 @books_bp.get("/<book_id>")
 def get_one_book(book_id):
     book = validate_book(book_id)
-
-    return {
-        "id": book.id,
-        "title": book.title,
-        "description": book.description,
-    }
+    return book.to_dict()
 
 @books_bp.delete("/<book_id>")
 def delete_book(book_id):
     book = validate_book(book_id)
-
     db.session.delete(book)
     db.session.commit()
     return Response(status=204, mimetype="application/json")
@@ -93,13 +70,18 @@ def validate_book(book_id):
     try:
         book_id = int(book_id)
     except:
-        response = {"message": f"book {book_id} invalid"}
-        abort(make_response(response , 400))
+        handle_error(f"book {book_id} invalid", 400)
 
     query = db.select(Book).where(Book.id == book_id)
     book = db.session.scalar(query)
     
     if not book:
-        response = {"message": f"book {book_id} not found"}
-        abort(make_response(response, 404))
+        handle_error(f"book {book_id} not found", 404)
     return book
+
+def handle_error(message, status_code):
+    abort(make_response({"message": message}, status_code))
+
+def apply_filtering(query):
+    # This function is a placeholder for potential future filtering logic.
+    return query
