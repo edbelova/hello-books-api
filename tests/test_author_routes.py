@@ -94,10 +94,9 @@ def test_create_one_author(client):
         "name": "New Author"
     }
 
-@pytest.mark.skip("Handles only 'name' key for Author model")
 def test_create_one_author_no_name(client):
     # Arrange
-    test_data = {"description": "The Best!"}
+    test_data = {}
 
     # Act
     response = client.post("/authors", json=test_data)
