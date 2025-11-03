@@ -1,0 +1,16 @@
+from sqlalchemy.orm import Mapped, mapped_column
+from ..db import db
+
+class Author(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
+
+    @classmethod
+    def from_dict(cls, author_data):
+        return cls(name=author_data["name"])
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }

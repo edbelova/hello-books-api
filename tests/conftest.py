@@ -1,6 +1,7 @@
 import pytest
 from app import create_app
 from app.db import db
+from app.models.author import Author
 from app.models.book import Book
 from flask.signals import request_finished
 from dotenv import load_dotenv
@@ -37,4 +38,12 @@ def two_saved_books(app):
     mountain_book = Book(title="Mountain Book", description="i luv 2 climb rocks")
 
     db.session.add_all([ocean_book, mountain_book])
+    db.session.commit()
+
+@pytest.fixture
+def two_saved_authors(app):
+    author1 = Author(name="Author One")
+    author2 = Author(name="Author Two")
+
+    db.session.add_all([author1, author2])
     db.session.commit()
