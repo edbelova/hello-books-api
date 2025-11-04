@@ -1,6 +1,6 @@
 from app.models.book import Book
 from app.models.author import Author
-from app.routes.route_utilities import validate_model
+from app.routes.route_utilities import get_models_with_filters, validate_model
 from app.routes.route_utilities import create_model
 import pytest
 from werkzeug.exceptions import HTTPException
@@ -69,3 +69,49 @@ def test_create_model_author(client):
     assert result[0]["id"] == 1
     assert result[0]["name"] == "New Author"
     assert result[1] == 201
+
+def test_get_models_with_filters_one_matching_book(two_saved_books):
+    # Act
+    result = get_models_with_filters(Book, {"title": "ocean"})
+
+    # Assert
+    assert result == [{
+        "id": 1,
+        "title": "Ocean Book",
+        "description": "watr 4evr"
+    }]
+
+def test_get_models_with_filters_one_matching_author(two_saved_authors):
+    # Act
+    result = get_models_with_filters(Author, {"name": "one"})
+
+    # Assert
+    assert result == [{
+        "id": 1,
+        "name": "Author One"
+    }]
+
+def test_get_models_with_filters_no_matching_books(two_saved_books):
+    # Act
+    result = get_models_with_filters(Book, {"title": "desert"})
+
+    # Assert
+    assert result == []
+
+def test_get_models_with_filters_no_matching_authors(two_saved_authors):
+    # Act
+    result = get_models_with_filters(Author, {"name": "three"})
+
+    # Assert
+    assert result == []
+
+def test_get_models_with_multiple_filters(two_saved_books):
+    # Act
+    result = get_models_with_filters(Book, {"title": "book", "description": "climb"})
+
+    # Assert
+    assert result == [{
+        "id": 2,
+        "title": "Mountain Book",
+        "description": "i luv 2 climb rocks"
+    }]

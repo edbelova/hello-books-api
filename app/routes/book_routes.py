@@ -2,7 +2,7 @@ from flask import Blueprint, make_response, request, Response
 
 from ..models.author import Author
 from ..models.book import Book
-from .route_utilities import create_model, validate_model
+from .route_utilities import create_model, get_models_with_filters, validate_model
 from ..db import db
 
 bp = Blueprint("books_bp", __name__, url_prefix="/books")
@@ -29,27 +29,7 @@ def update_book(book_id):
 
 @bp.get("")
 def get_all_books():
-    query = db.select(Book)
-
-    title_param = request.args.get("title")
-    if title_param:
-        query = query.where(Book.title.ilike(f"%{title_param}%"))
-
-    description_param = request.args.get("description")
-    if description_param:
-        query = query.where(Book.description.ilike(f"%{description_param}%"))
-
-    min_param = request.args.get("min")
-    if min_param:
-        query = query.where(Book.id >= int(min_param))
-    
-    max_param = request.args.get("max")
-    if max_param:
-        query = query.where(Book.id <= int(max_param))
-
-    books = db.session.scalars(query.order_by(Book.id))
-
-    return [book.to_dict() for book in books]
+    return get_models_with_filters(Book, request.args)
 
 @bp.get("/<book_id>")
 def get_one_book(book_id):

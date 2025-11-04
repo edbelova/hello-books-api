@@ -32,3 +32,26 @@ def create_model(cls, model_data):
     db.session.commit()
 
     return new_model.to_dict(), 201
+
+def get_models_with_filters(cls, filter_params):
+    query = db.select(cls)
+
+    for param, value in filter_params.items():
+        if hasattr(cls, param):
+            query = query.where(getattr(cls, param).ilike(f"%{value}%"))
+
+    models = db.session.scalars(query.order_by(cls.id))
+
+    return [model.to_dict() for model in models]
+
+def get_models_with_filters(cls, filter_params=None):
+    query = db.select(cls)
+
+    if filter_params :
+        for param, value in filter_params.items():
+            if hasattr(cls, param):
+                query = query.where(getattr(cls, param).ilike(f"%{value}%"))
+
+    models = db.session.scalars(query.order_by(cls.id))
+
+    return [model.to_dict() for model in models]

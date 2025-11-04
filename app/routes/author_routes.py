@@ -1,7 +1,7 @@
 from flask import Blueprint, make_response, request, Response
 from app.models.book import Book
 from ..models.author import Author
-from .route_utilities import validate_model, handle_error, create_model
+from .route_utilities import get_models_with_filters, validate_model, handle_error, create_model
 from ..db import db
 
 bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
@@ -25,15 +25,7 @@ def update_author(author_id):
 
 @bp.get("")
 def get_all_authors():
-    query = db.select(Author)
-
-    name_param = request.args.get("name")
-    if name_param:
-        query = query.where(Author.name.ilike(f"%{name_param}%"))
-
-    authors = db.session.scalars(query.order_by(Author.id))
-
-    return [author.to_dict() for author in authors]
+    return get_models_with_filters(Author, request.args)
 
 @bp.get("/<author_id>")
 def get_one_author(author_id):
