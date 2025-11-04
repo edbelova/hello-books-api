@@ -147,7 +147,7 @@ def test_create_one_book_with_extra_keys(client):
 
 def test_update_one_book(client, two_saved_books):
     # Arrange
-    test_data = test_data = {
+    test_data = {
         "title": "Updated Book",
         "description": "The Bestest!"
     }

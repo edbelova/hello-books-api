@@ -1,6 +1,8 @@
 from flask import Blueprint, make_response, request, Response
+
+from ..models.author import Author
 from ..models.book import Book
-from .route_utilities import validate_model, handle_error
+from .route_utilities import create_model, validate_model
 from ..db import db
 
 bp = Blueprint("books_bp", __name__, url_prefix="/books")
@@ -8,24 +10,18 @@ bp = Blueprint("books_bp", __name__, url_prefix="/books")
 @bp.post("")
 def create_book():
     request_body = request.get_json()
-
-    try:
-        new_book = Book.from_dict(request_body)
-    except KeyError as error:
-        handle_error(f"Invalid request: missing {error.args[0]}", 400)
-
-    db.session.add(new_book)
-    db.session.commit()
-
-    return new_book.to_dict(), 201
+    return create_model(Book, request_body)
 
 @bp.put("/<book_id>")
 def update_book(book_id):
     book = validate_model(Book, book_id)
+    if book.author_id:
+        author = validate_model(Author, book.author_id)
     request_body = request.get_json()
 
     book.title = request_body["title"]
     book.description = request_body["description"]
+    book.author_id = request_body.get("author_id", book.author_id)
 
     db.session.commit()
 

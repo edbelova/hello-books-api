@@ -1,7 +1,7 @@
 from flask import Blueprint, make_response, request, Response
 from app.models.book import Book
 from ..models.author import Author
-from .route_utilities import validate_model, handle_error
+from .route_utilities import validate_model, handle_error, create_model
 from ..db import db
 
 bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
@@ -9,16 +9,7 @@ bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
 @bp.post("")
 def create_author():
     request_body = request.get_json()
-
-    try:
-        new_author = Author.from_dict(request_body)
-    except KeyError as error:
-        handle_error(f"Invalid request: missing {error.args[0]}", 400)
-
-    db.session.add(new_author)
-    db.session.commit()
-
-    return new_author.to_dict(), 201
+    return create_model(Author, request_body)
 
 @bp.put("/<author_id>")
 def update_author(author_id):
@@ -59,15 +50,13 @@ def delete_author(author_id):
 @bp.post("/<author_id>/books")
 def create_book_with_author(author_id):
     author = validate_model(Author, author_id)
+    
     request_body = request.get_json()
     request_body["author_id"] = author.id
 
-    try:
-        new_book = Book.from_dict(request_body)
-    except KeyError as error:
-        handle_error(f"Invalid request: missing {error.args[0]}", 400)
+    return create_model(Book, request_body)
 
-    db.session.add(new_book)
-    db.session.commit()
-
-    return make_response(new_book.to_dict(), 201)
+@bp.get("/<author_id>/books")
+def get_books_by_author(author_id):
+    author = validate_model(Author, author_id)
+    return [book.to_dict() for book in author.books]

@@ -22,8 +22,7 @@ class Book(db.Model):
         book_as_dict = {
             "id": self.id,
             "title": self.title,
-            "description": self.description,
-            "author_id": self.author_id
+            "description": self.description
         }
         if self.author:
             book_as_dict["author"] = self.author.to_dict()

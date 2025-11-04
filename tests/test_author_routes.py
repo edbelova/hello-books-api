@@ -96,7 +96,7 @@ def test_create_one_author(client):
 
 def test_create_one_author_no_name(client):
     # Arrange
-    test_data = {}
+    test_data = {"description": "The Best!"}
 
     # Act
     response = client.post("/authors", json=test_data)
