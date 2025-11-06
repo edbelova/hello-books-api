@@ -212,3 +212,92 @@ def test_delete_author_invalid_id(client, two_saved_authors):
     # Assert
     assert response.status_code == 400
     assert response_body == {"message": "Author cat invalid"}
+
+def test_create_book_with_author(client, two_saved_authors):
+    # Act
+    response = client.post("/authors/1/books", json={
+        "title": "New Book",
+        "description": "An exciting new book belongs to author 1."
+    })
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 201
+    assert response_body == {
+        "id": 1,
+        "title": "New Book",
+        "description": "An exciting new book belongs to author 1.",
+        "author_id": 1
+    }
+
+def test_create_book_with_author_missing_record(client, two_saved_authors):
+    # Act
+    response = client.post("/authors/3/books", json={
+        "title": "New Book",
+        "description": "An exciting new book belongs to author 3."
+    })
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 404
+    assert response_body == {"message": "Author 3 not found"}
+
+def test_create_book_with_author_invalid_id(client, two_saved_authors):
+    # Act
+    response = client.post("/authors/cat/books", json={
+        "title": "New Book",
+        "description": "An exciting new book belongs to author cat."
+    })
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 400
+    assert response_body == {"message": "Author cat invalid"}
+
+def test_get_books_by_author(client, two_saved_authors, two_saved_books):
+    # Arrange
+    from app.models.book import Book
+    from app.db import db
+
+    book1 = Book(title="Author One Book 1", description="First book by author one.", author_id=1)
+    book2 = Book(title="Author One Book 2", description="Second book by author one.", author_id=1)
+    db.session.add_all([book1, book2])
+    db.session.commit()
+
+    # Act
+    response = client.get("/authors/1/books")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(response_body) == 2
+    assert response_body[0] == {
+        "id": book1.id,
+        "title": "Author One Book 1",
+        "description": "First book by author one.",
+        "author_id": 1
+    }
+    assert response_body[1] == {
+        "id": book2.id,
+        "title": "Author One Book 2",
+        "description": "Second book by author one.",
+        "author_id": 1
+    }
+
+def test_get_books_by_author_missing_record(client, two_saved_authors):
+    # Act
+    response = client.get("/authors/3/books")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 404
+    assert response_body == {"message": "Author 3 not found"}
+
+def test_get_books_by_author_invalid_id(client, two_saved_authors):
+    # Act
+    response = client.get("/authors/cat/books")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 400
+    assert response_body == {"message": "Author cat invalid"}

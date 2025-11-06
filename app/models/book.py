@@ -14,10 +14,12 @@ class Book(db.Model):
     @classmethod
     def from_dict(cls, book_data):
         author_id = book_data.get("author_id")
+        genres = book_data.get("genres", [])
         
         return cls(title=book_data["title"],
                    description=book_data["description"],
-                   author_id=author_id)
+                   author_id=author_id,
+                   genres=genres)
 
     def to_dict(self):
         book_as_dict = {
@@ -25,7 +27,9 @@ class Book(db.Model):
             "title": self.title,
             "description": self.description
         }
-        if self.author:
-            book_as_dict["author"] = self.author.to_dict()
+        if self.author_id:
+            book_as_dict["author_id"] = self.author_id # Add author_id to the dictionary representation
+        if self.genres:
+            book_as_dict["genres"] = [genre.name for genre in self.genres]
 
         return book_as_dict
