@@ -9,6 +9,7 @@ class Book(db.Model):
     description: Mapped[str]
     author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("author.id"))
     author: Mapped[Optional["Author"]] = relationship(back_populates="books")
+    genres: Mapped[list["Genre"]] = relationship(secondary="book_genre", back_populates="books")
 
     @classmethod
     def from_dict(cls, book_data):
