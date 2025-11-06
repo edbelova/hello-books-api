@@ -47,3 +47,13 @@ def two_saved_authors(app):
 
     db.session.add_all([author1, author2])
     db.session.commit()
+
+@pytest.fixture
+def two_saved_genres(app):
+    from app.models.genre import Genre
+
+    genre1 = Genre(name="Fantasy")
+    genre2 = Genre(name="Science Fiction")
+
+    db.session.add_all([genre1, genre2])
+    db.session.commit()
